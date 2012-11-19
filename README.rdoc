@@ -31,8 +31,16 @@ Example
 
   aws_keychain --keychain=/path/to/my/keychain.json --action=iam-show --output=~/iamcreds --keyname=key1
 
-
 The above example will create an IAM Credential file at ~/iamcreds with the AWS key and secret found in "key1" of "keychain.json"
+
+A more practical example of why this might be useful...
+
+  for i in $(aws_keychain --keychain=keychain.json --list-keys --quiet)
+  do
+    aws_keychain --keychain=keychain.json --quiet --keyname=$i --output=iamcredfile
+    iam-accountgetsummary
+    echo "----------------------------"
+  done
 
 === JSON Plugin
 
