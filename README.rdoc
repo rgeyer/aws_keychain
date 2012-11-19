@@ -1,0 +1,13 @@
+= aws_keychain
+
+== Usage
+
+== TODO
+
+* Validation of keychain data
+* Maybe some encryption or protection?
+* Figure out a better plugin scheme which allows them to be distributed via rubygems.
+
+== Copyright
+
+Copyright (c) 2012 Ryan J. Geyer. See LICENSE.txt for further details.

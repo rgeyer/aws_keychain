@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+# Copyright (c) 2012 Ryan J. Geyer
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+require 'trollop'
+require 'logger'
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'aws_keychain'))
+
+opts = Trollop::options do
+  banner = "Stores AWS Creds and can be used to spit those creds out into useful file formats for AWS CLI tools"
+
+  opt :keychain, "A full or relative path to your keychain file", :type => :string, :default => "aws_keychain.json"
+  opt :keyname, "The name of a key to perform an action with", :type => :string
+  opt :action, "The name of the action to perform.  See --show_actions for a list of available actions", :type => :string
+  opt :output, "A full or relative path to a target file for the output", :type => :string
+  opt :show_actions, "List the available actions to perform on a key"
+  opt :list, "Lists all of the available credentials in the keychain"
+  opt :quiet, "Removes any ancillary output and provides only the output of the action"
+end
+
+log = Logger.new(STDOUT)
+
+plugins = {}
+AwsKeychain::Plugin.constants.each do |plugin_class|
+  plugin_class = AwsKeychain::Plugin.const_get(plugin_class)
+  plugin = plugin_class.new(opts)
+  plugins[plugin.short_name] = plugin
+end
+
+if opts[:show_actions]
+  actions = []
+  plugins.each do |key,val|
+    val.actions.each do |action|
+      actions << "#{key}-#{action}"
+    end
+  end
+  puts actions
+end
+
+# This stuff requires a valid keychain file
+if opts[:action] || opts[:list]
+  keychain = AwsKeychain::Keychain.new(:keychain_file => opts[:keychain])
+
+  if opts[:action]
+
+  end
+
+  if opts[:list]
+    puts "Here are all of the keys in the keychain" unless opts[:quiet]
+    puts "<------------ Keys Begin ------------>" unless opts[:quiet]
+    puts keychain.list
+    puts "<------------- Keys End ------------->" unless opts[:quiet]
+  end
+end
