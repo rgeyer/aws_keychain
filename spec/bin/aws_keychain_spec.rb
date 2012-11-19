@@ -38,15 +38,8 @@ describe "AWS Keychain Binary" do
 
   context :list do
     it 'honors quiet mode' do
-      `#{aws_keychain_binfile} --keychain="#{@tmpfile}"  --list`.should == <<EOF
-Here are all of the keys in the keychain
-<------------ Keys Begin ------------>
-foo
-bar
-baz
-<------------- Keys End ------------->
-EOF
-`#{aws_keychain_binfile} --keychain="#{@tmpfile}"  --list --quiet`.should == <<EOF
+      `#{aws_keychain_binfile} --keychain="#{@tmpfile}"  --list-keys`.should include "INFO -- : All available keys"
+      `#{aws_keychain_binfile} --keychain="#{@tmpfile}"  --list-keys --quiet`.should == <<EOF
 foo
 bar
 baz
@@ -55,8 +48,24 @@ EOF
   end
 
   context :show_actions do
+    it 'honors quiet mode' do
+      `#{aws_keychain_binfile} --list-actions --quiet`.should_not include "INFO -- : All available actions listed below"
+    end
+
     it 'has at least the json-show action' do
-      `#{aws_keychain_binfile} --show-actions`.should include "json-show"
+      `#{aws_keychain_binfile} --list-actions`.should include "json-show"
+    end
+  end
+
+  context :action do
+    it 'exits with exception when invalid action is specified' do
+      `#{aws_keychain_binfile} --keychain="#{@tmpfile}" --action="foo-bar-baz"`.should include "The action foo-bar-baz is invalid"
+      $?.exitstatus.should == 1
+    end
+
+    it 'exits with exception when unparsable action is specified' do
+      `#{aws_keychain_binfile} --keychain="#{@tmpfile}" --action="not in the right format"`.should include "The action not in the right format is invalid"
+      $?.exitstatus.should == 1
     end
   end
 end

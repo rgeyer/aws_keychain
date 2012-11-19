@@ -30,44 +30,49 @@ opts = Trollop::options do
 
   opt :keychain, "A full or relative path to your keychain file", :type => :string, :default => "aws_keychain.json"
   opt :keyname, "The name of a key to perform an action with", :type => :string
-  opt :action, "The name of the action to perform.  See --show_actions for a list of available actions", :type => :string
+  opt :action, "The name of the action to perform.  See --list_actions for a list of available actions", :type => :string
   opt :output, "A full or relative path to a target file for the output", :type => :string
-  opt :show_actions, "List the available actions to perform on a key"
-  opt :list, "Lists all of the available credentials in the keychain"
+  opt :list_actions, "List the available actions to perform on a key"
+  opt :list_keys, "Lists all of the available credentials in the keychain"
   opt :quiet, "Removes any ancillary output and provides only the output of the action"
 end
 
 log = Logger.new(STDOUT)
 
 plugins = {}
+actions = []
 AwsKeychain::Plugin.constants.each do |plugin_class|
   plugin_class = AwsKeychain::Plugin.const_get(plugin_class)
   plugin = plugin_class.new(opts)
   plugins[plugin.short_name] = plugin
+
+  plugin.actions.each do |action|
+    actions << "#{plugin.short_name}-#{action}"
+  end
 end
 
-if opts[:show_actions]
-  actions = []
-  plugins.each do |key,val|
-    val.actions.each do |action|
-      actions << "#{key}-#{action}"
-    end
-  end
+if opts[:list_actions]
+  log.info "All available actions listed below" unless opts[:quiet]
   puts actions
 end
 
 # This stuff requires a valid keychain file
-if opts[:action] || opts[:list]
+if opts[:action] || opts[:list_keys]
   keychain = AwsKeychain::Keychain.new(:keychain_file => opts[:keychain])
 
   if opts[:action]
+    matches = /^([\w]*)-(.*)$/.match(opts[:action])
+    unless actions.include? opts[:action] && matches && matches.length == 3
+      log.fatal "The action #{opts[:action]} is invalid, try one of the following #{actions}"
+      exit 1
+    end
 
+    dyn_method = plugins[matches[1]].method(matches[2])
+    dyn_method.call
   end
 
-  if opts[:list]
-    puts "Here are all of the keys in the keychain" unless opts[:quiet]
-    puts "<------------ Keys Begin ------------>" unless opts[:quiet]
+  if opts[:list_keys]
+    log.info "All available keys in the keychain listed below" unless opts[:quiet]
     puts keychain.list
-    puts "<------------- Keys End ------------->" unless opts[:quiet]
   end
 end

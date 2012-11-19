@@ -1,6 +1,16 @@
 = aws_keychain
 
+Stores AWS Creds and can be used to spit those creds out into useful file formats for AWS CLI tools
+
+{<img src="https://travis-ci.org/rgeyer/aws_keychain.png" />}[https://travis-ci.org/rgeyer/aws_keychain]
+
 == Usage
+
+== Plugins
+
+== Testing
+
+Currently, aws_keychain is bundled with plugins (see "Plugins" above).  The tests make the assumption that the json plugin is available when testing the aws_keychain binary.  This may change later
 
 == TODO
 
