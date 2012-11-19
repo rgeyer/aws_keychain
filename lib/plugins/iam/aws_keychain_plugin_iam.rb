@@ -34,8 +34,8 @@ module AwsKeychain
         "iam"
       end
 
-      def show(key)
-        <<EOF
+      def show(key, &block)
+        yield <<EOF
 AWSAccessKeyId=#{key['key']}
 AWSSecretKey=#{key['secret']}
 EOF

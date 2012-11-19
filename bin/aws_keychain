@@ -37,7 +37,13 @@ opts = Trollop::options do
   opt :quiet, "Removes any ancillary output and provides only the output of the action"
 end
 
-log = Logger.new(STDOUT)
+class SilentLogger
+  def method_missing(sym, *args, &block)
+    # Do nothing..
+  end
+end
+
+log = opts[:quiet] ? SilentLogger.new() : Logger.new(STDOUT)
 
 plugins = {}
 actions = []
@@ -52,7 +58,7 @@ AwsKeychain::Plugin.constants.each do |plugin_class|
 end
 
 if opts[:list_actions]
-  log.info "All available actions listed below" unless opts[:quiet]
+  log.info "All available actions listed below"
   puts actions
 end
 
@@ -62,17 +68,30 @@ if opts[:action] || opts[:list_keys]
 
   if opts[:action]
     matches = /^([\w]*)-(.*)$/.match(opts[:action])
-    unless actions.include? opts[:action] && matches && matches.length == 3
+    unless actions.include?(opts[:action]) && matches && matches.length == 3
       log.fatal "The action #{opts[:action]} is invalid, try one of the following #{actions}"
       exit 1
     end
 
+    # TODO: Validate that the key exists
+    key = keychain[opts[:keyname]]
+
     dyn_method = plugins[matches[1]].method(matches[2])
-    dyn_method.call
+    dyn_method.call(key) do |content|
+      if opts[:output]
+        File.open(opts[:output], 'w') do |file|
+          log.info("Writing the output of (#{opts[:action]}) to #{opts[:output]}")
+          file.write(content)
+        end
+      else
+        log.info("Action (#{opts[:action]}) produced the following output.")
+        puts content
+      end
+    end
   end
 
   if opts[:list_keys]
-    log.info "All available keys in the keychain listed below" unless opts[:quiet]
+    log.info "All available keys in the keychain listed below"
     puts keychain.list
   end
 end

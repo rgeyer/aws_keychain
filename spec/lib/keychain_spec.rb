@@ -39,12 +39,25 @@ describe AwsKeychain::Keychain do
     it 'lists all keys' do
       keychain_data = {
         'key1' => {},
-        'key1' => {}
+        'key2' => {}
       }
 
       keychain = AwsKeychain::Keychain.new(:keychain_data => keychain_data)
 
       keychain.list.should == keychain_data.keys
-      end
+    end
+  end
+
+  context :operators do
+    it 'implements an array style operator override' do
+      keychain_data = {
+        'key1' => {},
+        'key2' => {}
+      }
+
+      keychain = AwsKeychain::Keychain.new(:keychain_data => keychain_data)
+
+      keychain['key1'].should == keychain_data['key1']
+    end
   end
 end

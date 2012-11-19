@@ -6,7 +6,46 @@ Stores AWS Creds and can be used to spit those creds out into useful file format
 
 == Usage
 
+Requires a JSON input file in the following format
+
+```
+{
+  "cred-name": {
+    "key": "AWS Access Key",
+    "secret": "AWS Access Key Secret
+  }
+}
+```
+
+Each cred hash can contain additional information beyond "key" and "secret" but those two are required.
+
+Check out aws_keychain --help for specifics
+
 == Plugins
+
+Currently the aws_keychain includes two plugins.
+
+=== IAM Plugin
+
+The IAM plugin will output the key and secret in the format required for an IAM credential file if you're using the IAM Cli tools.
+
+Example
+```
+aws_keychain --keychain=/path/to/my/keychain.json --action=iam-show --output=~/iamcreds --keyname=key1
+```
+
+The above example will create an IAM Credential file at ~/iamcreds with the AWS key and secret found in "key1" of "keychain.json"
+
+=== JSON Plugin
+
+The JSON plugin will usually be used simply to view the key and secret, or to consume the JSON result with another commandline tool.
+
+Example
+```
+aws_keychain --keychain=/path/to/my/keychain.json --action=json-show --keyname=key1
+```
+
+The above example will print JSON to STDOUT representing the key "key1" found in "keychain.json".  This will include all values that are part of the hash in the keychain.json file.  I.E. Possibly more than just "key" and "secret"
 
 == Testing
 

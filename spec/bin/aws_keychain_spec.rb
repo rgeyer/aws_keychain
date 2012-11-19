@@ -67,5 +67,9 @@ EOF
       `#{aws_keychain_binfile} --keychain="#{@tmpfile}" --action="not in the right format"`.should include "The action not in the right format is invalid"
       $?.exitstatus.should == 1
     end
+
+    it 'honors quiet mode' do
+      `#{aws_keychain_binfile} --keychain="#{@tmpfile}" --action="json-show" --keyname="foo" --quiet`.should_not include "Action (json-show) produced the following output."
+    end
   end
 end

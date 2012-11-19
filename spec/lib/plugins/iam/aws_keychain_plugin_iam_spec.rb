@@ -49,8 +49,12 @@ describe AwsKeychain::Plugin::Iam do
         "key" => "key",
         "secret" => "secret"
       }
+      output = ''
       iam = AwsKeychain::Plugin::Iam.new
-      iam.show(key).should == <<EOF
+      iam.show(key) do |content|
+        output = content
+      end
+      output.should == <<EOF
 AWSAccessKeyId=key
 AWSSecretKey=secret
 EOF

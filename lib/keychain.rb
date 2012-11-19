@@ -49,5 +49,13 @@ module AwsKeychain
       @keychain.keys
     end
 
+    # Array operator override to access keys by their name
+    #
+    # @param [String] key The string name of the key to return
+    # @return [Hash] The desired hash
+    def [](key)
+      @keychain[key]
+    end
+
   end
 end

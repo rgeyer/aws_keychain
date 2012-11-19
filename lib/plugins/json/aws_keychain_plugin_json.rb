@@ -36,8 +36,8 @@ module AwsKeychain
         "json"
       end
 
-      def show(key)
-        JSON.pretty_generate(key)
+      def show(key, &block)
+        yield JSON.pretty_generate(key)
       end
     end
   end

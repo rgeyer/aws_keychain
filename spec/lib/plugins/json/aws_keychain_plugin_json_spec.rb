@@ -49,8 +49,12 @@ describe AwsKeychain::Plugin::Json do
         "key" => "key",
         "secret" => "secret"
       }
+      output = ''
       json = AwsKeychain::Plugin::Json.new
-      json.show(key).should == JSON.pretty_generate(key)
+      json.show(key) do |content|
+        output = content
+      end
+      output.should == JSON.pretty_generate(key)
     end
   end
 end
